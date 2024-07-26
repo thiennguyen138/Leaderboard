@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:6.2.14
+    hostname: redismaster
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    environment:
+      - REDIS_PASSWORD=Passw0rd
+      - REDIS_PORT=6379
+      - REDIS_DATABASES=16
+    command: redis-server /usr/local/etc/redis/redis.conf
+#  postgres:
+#    image: postgres:16.3
+#    restart: always
+#    shm_size: 128mb
+#    environment:
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: postgres
+#      POSTGRES_DB: postgres
+#    volumes:
+#      - ./postgres/data:/var/lib/postgresql/data
+#    ports:
+#      - "5432:5432"
+#  pgadmin:
+#    image: dpage/pgadmin4
+#    container_name: pgadmin4_container
+#    restart: always
+#    ports:
+#      - "8888:80"
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: admin@elsa.io
+#      PGADMIN_DEFAULT_PASSWORD: Passw0rd
+#    volumes:
+#      - ./pgadmin/data:/var/lib/pgadmin
+#  myapp:
+#    build: ../
+#    ports:
+#      - "8090:8090"
+#    volumes:
+#      - ./pgadmin/data:/var/lib/pgadmin
