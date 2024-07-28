@@ -14,7 +14,7 @@ At root folder, use
 `i.e java -jar InitData.jar 127.0.0.1 127.0.0.1`
 
 ## Design:
-System design:
+System design, **the diagram in green box is implemented in this project**:
 ![alt text for screen readers](./System-design.png )
 
 Dataflow:
