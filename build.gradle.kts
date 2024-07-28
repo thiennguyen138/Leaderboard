@@ -33,7 +33,6 @@ dependencies {
   implementation("io.vertx:vertx-hazelcast")
   implementation("io.vertx:vertx-redis-client")
   implementation("com.ongres.scram:client:2.1")
-  implementation("com.ongres.scram:client:2.1")
   implementation("org.apache.commons:commons-lang3:3.15.0")
   implementation("com.google.code.gson:gson:2.11.0")
   implementation("org.slf4j:slf4j-api:2.0.13")

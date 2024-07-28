@@ -1,70 +1,61 @@
 package io.elsa.leaderboard.verticle;
 
+import io.elsa.leaderboard.common.StringUtil;
+import io.elsa.leaderboard.common.VertXAddress;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.PgBuilder;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.redis.client.Redis;
 import io.vertx.redis.client.RedisAPI;
+import io.vertx.redis.client.Response;
 import io.vertx.sqlclient.*;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.*;
 
 public class PostgresVerticle extends AbstractVerticle {
-  @Override
-  public void start() {
-    PgConnectOptions connectOptions = new PgConnectOptions()
-      .setPort(5432)
-      .setHost("postgres")
-      .setDatabase("postgres")
-      .setUser("postgres")
-      .setPassword("postgres");
 
-    Map<String, String> props = new HashMap<>();
-    props.put("search_path", "test");
-    connectOptions.setProperties(props);
+    private SqlClient sqlClient;
 
-    PoolOptions poolOptions = new PoolOptions()
-      .setMaxSize(20);
+    @Override
+    public void start() {
+        PgConnectOptions connectOptions = new PgConnectOptions()
+                .setPort(5432)
+                .setHost(config().getString("postgresHost"))
+                .setDatabase("postgres")
+                .setUser("postgres")
+                .setPassword("postgres");
 
-    SqlClient client = PgBuilder
-      .client()
-      .with(poolOptions)
-      .connectingTo(connectOptions)
-      .using(vertx)
-      .build();
+        Map<String, String> props = new HashMap<>();
+        props.put("search_path", "leaderboard");
+        connectOptions.setProperties(props);
 
-//    int leftLimit = 97; // letter 'a'
-//    int rightLimit = 122; // letter 'z'
-//    int targetStringLength = 10;
-//    Random random = new Random();
-//
-//    for (int i = 0; i < 500; i++) {
-//      List<Tuple> batch = new ArrayList<>();
-//      for (int j = 0; j < 100000; j++) {
-//        String generatedUserId = random.ints(leftLimit, rightLimit + 1)
-//          .limit(targetStringLength)
-//          .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-//          .toString();
-//
-//        String generatedGameId = random.ints(leftLimit, rightLimit + 1)
-//          .limit(1)
-//          .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-//          .toString();
-//
-//        batch.add(Tuple.of(generatedUserId, random.nextInt(9999), generatedGameId));
-//      }
-//      client
-//        .preparedQuery("INSERT INTO test.user_score(user_id, score, game_id) VALUES ($1, $2, $3)")
-//        .executeBatch(batch)
-//        .onComplete(ar -> {
-//          if (ar.succeeded()) {
-//            RowSet<Row> rows = ar.result();
-//            System.out.println(rows.rowCount());
-//          } else {
-//            System.out.println("Failure: " + ar.cause().getMessage());
-//          }
-//        });
-//    }
+        PoolOptions poolOptions = new PoolOptions()
+                .setMaxSize(20);
 
-  }
+        sqlClient = PgBuilder
+                .client()
+                .with(poolOptions)
+                .connectingTo(connectOptions)
+                .using(vertx)
+                .build();
+
+        vertx.eventBus().consumer(VertXAddress.GET_USERS_SCORE, message -> {
+            JsonArray userIds = (JsonArray) message.body();
+            sqlClient.query("select * from leaderboard.user_scores where user_id IN (" + StringUtil.parseListStringToString(userIds.getList()) + ")")
+                    .execute()
+                    .onComplete(ar -> {
+                        if (ar.succeeded()) {
+                            JsonArray jsonArray = new JsonArray();
+                            ar.result().forEach(rs -> jsonArray.add(rs.toJson()));
+                            message.reply(jsonArray);
+                        } else {
+                            message.fail(500, "Internal Server Error");
+                        }
+                    });
+        });
+
+    }
 }

@@ -4,6 +4,8 @@ import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 
@@ -15,10 +17,10 @@ public interface LeaderBoardService {
     return new LeaderBoardServiceVertxEBProxy(vertx, LEADERBOARD_SERVICE_ADDRESS);
   }
 
-  void getLeaderboardInRange(int from, int to, Handler<AsyncResult<List<String>>> result);
+  void getLeaderboardInRange(int from, int to, Handler<AsyncResult<String>> result);
 
   void getRankByUserId(String userId, Handler<AsyncResult<Long>> result);
 
-  void getRelativeLeaderboard(long fromRank, long toRank, Handler<AsyncResult<List<String>>> result);
+  void getUserScore(List<String> userIds, Handler<AsyncResult<String>> result);
 
 }

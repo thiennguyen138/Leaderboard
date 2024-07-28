@@ -183,3 +183,8 @@ nbdist/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+/docker/postgres/data/
+/docker/pgadmin/data/
+/.idea/
+/build/
+/build/classes/
